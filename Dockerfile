@@ -1,5 +1,5 @@
 # Use official Node.js image
-FROM node:18-alpine
+FROM public.ecr.aws/docker/library/node:18-alpine
 
 # Set working directory inside container
 WORKDIR /app
