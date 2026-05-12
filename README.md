@@ -1,7 +1,7 @@
 # AWS CI/CD Pipeline Guide
 ### GitHub → CodePipeline → CodeBuild → ECR → ECS Fargate
 
-> A complete step-by-step guide to building a fully automated Docker deployment pipeline on AWS — from writing code to running containers.
+> A complete step-by-step guide to building a fully automated Docker deployment pipeline on AWS - from writing code to running containers.
 
 ---
 
@@ -9,16 +9,16 @@
 
 1. [Architecture Overview](#architecture-overview)
 2. [Prerequisites](#prerequisites)
-3. [Phase 1 — Prepare Your Application](#phase-1--prepare-your-application)
-4. [Phase 2 — Push Code to GitHub](#phase-2--push-code-to-github)
-5. [Phase 3 — Create ECR Private Repository](#phase-3--create-ecr-private-repository)
-6. [Phase 4 — Create ECS Cluster](#phase-4--create-ecs-cluster)
-7. [Phase 5 — Create Task Definition](#phase-5--create-task-definition)
-8. [Phase 6 — Create ECS Service](#phase-6--create-ecs-service)
-9. [Phase 7 — Set Up IAM Roles](#phase-7--set-up-iam-roles)
-10. [Phase 8 — Create CodeBuild Project](#phase-8--create-codebuild-project)
-11. [Phase 9 — Create CodePipeline](#phase-9--create-codepipeline)
-12. [Phase 10 — Test the Pipeline](#phase-10--test-the-pipeline)
+3. [Phase 1 - Prepare Your Application](#phase-1--prepare-your-application)
+4. [Phase 2 - Push Code to GitHub](#phase-2--push-code-to-github)
+5. [Phase 3 - Create ECR Private Repository](#phase-3--create-ecr-private-repository)
+6. [Phase 4 - Create ECS Cluster](#phase-4--create-ecs-cluster)
+7. [Phase 5 - Create Task Definition](#phase-5--create-task-definition)
+8. [Phase 6 - Create ECS Service](#phase-6--create-ecs-service)
+9. [Phase 7 - Set Up IAM Roles](#phase-7--set-up-iam-roles)
+10. [Phase 8 - Create CodeBuild Project](#phase-8--create-codebuild-project)
+11. [Phase 9 - Create CodePipeline](#phase-9--create-codepipeline)
+12. [Phase 10 - Test the Pipeline](#phase-10--test-the-pipeline)
 13. [Troubleshooting](#troubleshooting)
 
 ---
@@ -62,16 +62,16 @@ Before starting, make sure you have:
 
 ---
 
-## Phase 1 — Prepare Your Application
+## Phase 1 - Prepare Your Application
 
-### Step 1.1 — Create Project Folder
+### Step 1.1 - Create Project Folder
 
 ```bash
 mkdir my-aws-demo
 cd my-aws-demo
 ```
 
-### Step 1.2 — Create `app.js`
+### Step 1.2 - Create `app.js`
 
 ```javascript
 const express = require('express');
@@ -87,7 +87,7 @@ app.listen(PORT, () => {
 });
 ```
 
-### Step 1.3 — Create `package.json`
+### Step 1.3 - Create `package.json`
 
 ```json
 {
@@ -103,7 +103,7 @@ app.listen(PORT, () => {
 }
 ```
 
-### Step 1.4 — Create `Dockerfile`
+### Step 1.4 - Create `Dockerfile`
 
 > ⚠️ **Important:** Use the **ECR Public mirror** instead of Docker Hub to avoid rate limit errors in CodeBuild.
 
@@ -134,7 +134,7 @@ CMD ["npm", "start"]
 
 Docker Hub has a rate limit for unauthenticated pulls. AWS CodeBuild uses shared IPs that frequently hit this limit, causing a `429 Too Many Requests` error. Using the AWS ECR Public mirror avoids this entirely.
 
-### Step 1.5 — Create `buildspec.yml`
+### Step 1.5 - Create `buildspec.yml`
 
 This file tells CodeBuild exactly what commands to run.
 
@@ -168,9 +168,9 @@ artifacts:
     - imagedefinitions.json
 ```
 
-> ⭐ The `imagedefinitions.json` file is critical — it tells ECS which container to update during deployment.
+> ⭐ The `imagedefinitions.json` file is critical - it tells ECS which container to update during deployment.
 
-### Step 1.6 — Create `.gitignore`
+### Step 1.6 - Create `.gitignore`
 
 ```
 node_modules/
@@ -190,7 +190,7 @@ my-aws-demo/
 
 ---
 
-## Phase 2 — Push Code to GitHub
+## Phase 2 - Push Code to GitHub
 
 ```bash
 # Initialize git
@@ -221,7 +221,7 @@ git push -u origin main
 
 ---
 
-## Phase 3 — Create ECR Private Repository
+## Phase 3 - Create ECR Private Repository
 
 1. Go to **AWS Console** → Search **ECR** → Click **Elastic Container Registry**
 2. Click **Create repository**
@@ -230,26 +230,26 @@ git push -u origin main
    - Repository name: `my-app-repo`
 4. Click **Create repository**
 
-> 📝 **Save your Repository URI** — it looks like:
+> 📝 **Save your Repository URI** - it looks like:
 > `123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app-repo`
 > You'll need this in later steps.
 
 ---
 
-## Phase 4 — Create ECS Cluster
+## Phase 4 - Create ECS Cluster
 
 1. Go to **AWS Console** → Search **ECS** → Click **Elastic Container Service**
 2. Click **Clusters** → **Create Cluster**
 3. Configure:
    - Cluster name: `my-app-cluster`
-   - Infrastructure: ✅ **AWS Fargate** (serverless — no EC2 instances to manage)
+   - Infrastructure: ✅ **AWS Fargate** (serverless - no EC2 instances to manage)
 4. Click **Create**
 
 > ⏳ Wait about 1 minute for the cluster to be ready.
 
 ---
 
-## Phase 5 — Create Task Definition
+## Phase 5 - Create Task Definition
 
 A Task Definition tells ECS **what container to run** and how to run it.
 
@@ -270,7 +270,7 @@ A Task Definition tells ECS **what container to run** and how to run it.
 
 ---
 
-## Phase 6 — Create ECS Service
+## Phase 6 - Create ECS Service
 
 An ECS Service keeps your container **running continuously** and handles rolling deployments.
 
@@ -291,9 +291,9 @@ An ECS Service keeps your container **running continuously** and handles rolling
 
 ---
 
-## Phase 7 — Set Up IAM Roles
+## Phase 7 - Set Up IAM Roles
 
-This is the most critical phase — it gives AWS services permission to talk to each other.
+This is the most critical phase - it gives AWS services permission to talk to each other.
 
 ### Role 1: CodeBuild Role
 
@@ -344,7 +344,7 @@ This is the most critical phase — it gives AWS services permission to talk to 
 ```
 
 4. Click **Next**
-5. Skip the managed policies — click **Next** again
+5. Skip the managed policies - click **Next** again
 6. Role name: `CodePipelineECSRole`
 7. Click **Create role**
 
@@ -386,7 +386,7 @@ This is the most critical phase — it gives AWS services permission to talk to 
 
 ---
 
-## Phase 8 — Create CodeBuild Project
+## Phase 8 - Create CodeBuild Project
 
 1. Go to **AWS Console** → Search **CodeBuild** → **Create build project**
 2. Configure:
@@ -405,7 +405,7 @@ This is the most critical phase — it gives AWS services permission to talk to 
 - ✅ **Enable privileged mode** ← Required for Docker builds!
 - Service role: `CodeBuildECRRole`
 
-**Environment Variables — Add all three:**
+**Environment Variables - Add all three:**
 
 | Name | Value |
 |------|-------|
@@ -421,13 +421,13 @@ This is the most critical phase — it gives AWS services permission to talk to 
 
 ---
 
-## Phase 9 — Create CodePipeline
+## Phase 9 - Create CodePipeline
 
 1. Go to **AWS Console** → Search **CodePipeline** → **Create pipeline**
 2. On the "Choose creation option" screen:
    - Category: **Build custom pipeline**
    
-     > ⭐ Do NOT use the templates (Push to ECR, Deploy to ECS Fargate, etc.) — they only cover partial workflows. "Build custom pipeline" lets us add all 3 stages manually.
+     > ⭐ Do NOT use the templates (Push to ECR, Deploy to ECS Fargate, etc.) - they only cover partial workflows. "Build custom pipeline" lets us add all 3 stages manually.
 
 3. Configure:
    - Pipeline name: `my-app-pipeline`
@@ -435,7 +435,7 @@ This is the most critical phase — it gives AWS services permission to talk to 
    - Service role: Select `CodePipelineECSRole`
 4. Click **Next**
 
-### Stage 1 — Source
+### Stage 1 - Source
 
 - Source provider: **GitHub (Version 2)**
 - Click **Connect to GitHub** → Follow OAuth flow to authorize
@@ -444,14 +444,14 @@ This is the most critical phase — it gives AWS services permission to talk to 
 - Detection mode: **Webhooks** (auto-triggers on push)
 - Click **Next**
 
-### Stage 2 — Build
+### Stage 2 - Build
 
 - Build provider: **AWS CodeBuild**
 - Region: Your region
 - Project name: `my-app-build`
 - Click **Next**
 
-### Stage 3 — Deploy
+### Stage 3 - Deploy
 
 - Deploy provider: **Amazon ECS**
 - Region: Your region
@@ -466,7 +466,7 @@ This is the most critical phase — it gives AWS services permission to talk to 
 
 ---
 
-## Phase 10 — Test the Pipeline
+## Phase 10 - Test the Pipeline
 
 ### Trigger the pipeline manually:
 
@@ -512,11 +512,11 @@ git push origin main
 # ❌ Old (causes rate limit errors)
 FROM node:18-alpine
 
-# ✅ New (use ECR Public mirror — no rate limits)
+# ✅ New (use ECR Public mirror - no rate limits)
 FROM public.ecr.aws/docker/library/node:18-alpine
 ```
 
-Commit and push — the pipeline will re-trigger automatically.
+Commit and push - the pipeline will re-trigger automatically.
 
 ---
 
@@ -524,7 +524,7 @@ Commit and push — the pipeline will re-trigger automatically.
 
 **Cause:** AWS removed CodePipeline from the service dropdown in newer UI.
 
-**Fix:** Use **Custom trust policy** when creating the role (see Phase 7 — Role 2) and paste this JSON:
+**Fix:** Use **Custom trust policy** when creating the role (see Phase 7 - Role 2) and paste this JSON:
 
 ```json
 {
@@ -547,7 +547,7 @@ Then attach the `CodePipelineCustomPolicy` inline policy as described in Phase 7
 
 **Cause:** AWS has deprecated `AWSCodePipelineFullAccess` and newer managed policies like `AWSCodePipeline_FullAccess` may not appear in all accounts or regions.
 
-**Fix:** Always use the `CodePipelineCustomPolicy` inline policy approach described in Phase 7 — it works regardless of AWS UI changes or region restrictions.
+**Fix:** Always use the `CodePipelineCustomPolicy` inline policy approach described in Phase 7 - it works regardless of AWS UI changes or region restrictions.
 
 ---
 
