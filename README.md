@@ -1,4 +1,5 @@
 # AWS CI/CD Pipeline Guide
+
 ### GitHub → CodePipeline → CodeBuild → ECR → ECS Fargate
 
 > A complete step-by-step guide to building a fully automated Docker deployment pipeline on AWS - from writing code to running containers.
@@ -20,6 +21,7 @@
 11. [Phase 9 - Create CodePipeline](#phase-9--create-codepipeline)
 12. [Phase 10 - Test the Pipeline](#phase-10--test-the-pipeline)
 13. [Troubleshooting](#troubleshooting)
+14. [Resouce Cleanup](#aws-resource-cleanup)
 
 ---
 
@@ -39,14 +41,14 @@ You push code to GitHub
 
 ### Services Used
 
-| Service | Purpose |
-|---------|---------|
-| **GitHub** | Source code repository |
+| Service              | Purpose                                |
+| -------------------- | -------------------------------------- |
+| **GitHub**           | Source code repository                 |
 | **AWS CodePipeline** | Orchestrates the entire CI/CD workflow |
-| **AWS CodeBuild** | Builds the Docker image |
-| **AWS ECR** | Private Docker image registry |
-| **AWS ECS Fargate** | Serverless container runtime |
-| **AWS IAM** | Permissions and roles |
+| **AWS CodeBuild**    | Builds the Docker image                |
+| **AWS ECR**          | Private Docker image registry          |
+| **AWS ECS Fargate**  | Serverless container runtime           |
+| **AWS IAM**          | Permissions and roles                  |
 
 ---
 
@@ -74,12 +76,12 @@ cd my-aws-demo
 ### Step 1.2 - Create `app.js`
 
 ```javascript
-const express = require('express');
+const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('<h1>🚀 Hello from ECS! Pipeline is working!</h1>');
+app.get("/", (req, res) => {
+  res.send("<h1>🚀 Hello from ECS! Pipeline is working!</h1>");
 });
 
 app.listen(PORT, () => {
@@ -261,11 +263,13 @@ A Task Definition tells ECS **what container to run** and how to run it.
    - Memory: `1 GB`
 3. Under **Container details**:
    - Name: `my-app-container`
-   
+
      > ⭐ This name **must exactly match** the container name in `buildspec.yml`
+
    - Image URI: `YOUR_ACCOUNT_ID.dkr.ecr.YOUR_REGION.amazonaws.com/my-app-repo:latest`
    - Container port: `3000`
    - Protocol: `TCP`
+
 4. Click **Create**
 
 ---
@@ -306,12 +310,12 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 
 **Attach these policies:**
 
-| Policy | Purpose |
-|--------|---------|
-| `AmazonEC2ContainerRegistryFullAccess` | Push images to ECR |
-| `AmazonECS_FullAccess` | Access ECS |
-| `AWSCodeBuildAdminAccess` | CodeBuild permissions |
-| `CloudWatchLogsFullAccess` | View build logs |
+| Policy                                 | Purpose               |
+| -------------------------------------- | --------------------- |
+| `AmazonEC2ContainerRegistryFullAccess` | Push images to ECR    |
+| `AmazonECS_FullAccess`                 | Access ECS            |
+| `AWSCodeBuildAdminAccess`              | CodeBuild permissions |
+| `CloudWatchLogsFullAccess`             | View build logs       |
 
 5. Role name: `CodeBuildECRRole`
 6. Click **Create role**
@@ -393,11 +397,13 @@ This is the most critical phase - it gives AWS services permission to talk to ea
    - Project name: `my-app-build`
 
 **Source:**
+
 - Source provider: **GitHub**
 - Click **Connect to GitHub** → Authorize AWS
 - Select your repository `my-aws-demo`
 
 **Environment:**
+
 - Environment: **Managed image**
 - Operating system: **Ubuntu**
 - Runtime: **Standard**
@@ -407,13 +413,14 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 
 **Environment Variables - Add all three:**
 
-| Name | Value |
-|------|-------|
+| Name                 | Value                          |
+| -------------------- | ------------------------------ |
 | `AWS_DEFAULT_REGION` | Your region (e.g. `us-east-1`) |
-| `AWS_ACCOUNT_ID` | Your 12-digit AWS account ID |
-| `IMAGE_REPO_NAME` | `my-app-repo` |
+| `AWS_ACCOUNT_ID`     | Your 12-digit AWS account ID   |
+| `IMAGE_REPO_NAME`    | `my-app-repo`                  |
 
 **Buildspec:**
+
 - Select: **Use a buildspec file**
 - Leave filename blank (defaults to `buildspec.yml` in your repo root)
 
@@ -426,7 +433,7 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 1. Go to **AWS Console** → Search **CodePipeline** → **Create pipeline**
 2. On the "Choose creation option" screen:
    - Category: **Build custom pipeline**
-   
+
      > ⭐ Do NOT use the templates (Push to ECR, Deploy to ECS Fargate, etc.) - they only cover partial workflows. "Build custom pipeline" lets us add all 3 stages manually.
 
 3. Configure:
@@ -556,6 +563,7 @@ Then attach the `CodePipelineCustomPolicy` inline policy as described in Phase 7
 **Cause:** Usually a port mismatch or missing IAM permissions.
 
 **Fix checklist:**
+
 - Container port in Task Definition matches the port in your app (`3000`)
 - Security group allows inbound traffic on port `3000`
 - ECR image URI in Task Definition is correct
@@ -631,21 +639,302 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 
 ## Quick Reference Cheat Sheet
 
-| Resource | Name Used |
-|----------|-----------|
-| ECR Repository | `my-app-repo` |
-| ECS Cluster | `my-app-cluster` |
-| ECS Task Definition | `my-app-task` |
-| ECS Service | `my-app-service` |
-| Container Name | `my-app-container` |
-| CodeBuild Project | `my-app-build` |
-| CodePipeline | `my-app-pipeline` |
-| CodeBuild IAM Role | `CodeBuildECRRole` |
-| CodePipeline IAM Role | `CodePipelineECSRole` |
+| Resource                   | Name Used                  |
+| -------------------------- | -------------------------- |
+| ECR Repository             | `my-app-repo`              |
+| ECS Cluster                | `my-app-cluster`           |
+| ECS Task Definition        | `my-app-task`              |
+| ECS Service                | `my-app-service`           |
+| Container Name             | `my-app-container`         |
+| CodeBuild Project          | `my-app-build`             |
+| CodePipeline               | `my-app-pipeline`          |
+| CodeBuild IAM Role         | `CodeBuildECRRole`         |
+| CodePipeline IAM Role      | `CodePipelineECSRole`      |
 | CodePipeline Inline Policy | `CodePipelineCustomPolicy` |
 
 > ⭐ **Golden Rule:** The container name `my-app-container` must be identical in three places: Task Definition, `buildspec.yml`, and `imagedefinitions.json` output.
 
 ---
 
-*Guide covers AWS Console UI as of May 2026. Some UI screens may vary slightly across regions.*
+# AWS Resource Cleanup
+
+> ⚠️ **Warning:** This is irreversible. Once deleted, resources cannot be recovered.
+> Always delete in the correct order — some resources depend on others.
+
+---
+
+## Cleanup Order (Must Follow This Sequence)
+
+```
+1. CodePipeline        → Stop the automation first
+2. CodeBuild           → Remove build project
+3. ECS Service         → Stop running containers
+4. ECS Cluster         → Delete the cluster
+5. ECS Task Definition → Deregister task definitions
+6. ECR Repository      → Delete images and repo
+7. IAM Roles           → Remove permissions
+8. CloudWatch Logs     → Delete log groups
+9. S3 Bucket           → Delete pipeline artifacts
+10. GitHub Connection  → Remove AWS connection (optional)
+```
+
+---
+
+## Step 1 — Delete CodePipeline
+
+**Why first:** Stops any future pipeline runs from triggering new deployments.
+
+1. Go to **AWS Console** → Search **CodePipeline**
+2. Click **Pipelines**
+3. Select `my-app-pipeline`
+4. Click **Delete pipeline** (top right)
+5. Type the pipeline name to confirm → Click **Delete**
+
+✅ Pipeline deleted.
+
+---
+
+## Step 2 — Delete CodeBuild Project
+
+1. Go to **AWS Console** → Search **CodeBuild**
+2. Click **Build projects**
+3. Select `my-app-build`
+4. Click **Action** → **Delete**
+5. Confirm deletion
+
+✅ CodeBuild project deleted.
+
+---
+
+## Step 3 — Stop & Delete ECS Service
+
+**Why before cluster:** You must scale down and delete the service before deleting the cluster.
+
+1. Go to **AWS Console** → Search **ECS**
+2. Click **Clusters** → `my-app-cluster`
+3. Click **Services** tab
+4. Select `my-app-service`
+5. Click **Update** (top right)
+6. Set **Desired tasks** → `0`
+7. Click **Update** → Wait for running tasks to stop (1-2 min)
+8. Go back to **Services** tab
+9. Select `my-app-service` again
+10. Click **Delete service**
+11. Check ✅ **"Force delete service"**
+12. Type `delete` to confirm → Click **Delete**
+
+✅ ECS Service deleted.
+
+---
+
+## Step 4 — Delete ECS Cluster
+
+1. Go to **ECS** → **Clusters**
+2. Select `my-app-cluster`
+3. Click **Delete cluster** (top right)
+4. Type `delete me` to confirm → Click **Delete**
+
+> ⏳ Takes 1-2 minutes to fully delete.
+
+✅ ECS Cluster deleted.
+
+---
+
+## Step 5 — Deregister ECS Task Definitions
+
+> ℹ️ AWS does not allow permanent deletion of task definitions easily — you must **deregister** them first, then delete.
+
+1. Go to **ECS** → **Task Definitions**
+2. Click `my-app-task`
+3. Select **all revisions** (check the box at the top)
+4. Click **Actions** → **Deregister**
+5. Confirm deregistration
+
+**To permanently delete (optional):**
+After deregistering, select the task definitions again:
+
+- Click **Actions** → **Delete**
+- Type `delete` to confirm
+
+✅ Task definitions removed.
+
+---
+
+## Step 6 — Delete ECR Repository
+
+> ⚠️ This deletes ALL Docker images stored in the repo.
+
+1. Go to **AWS Console** → Search **ECR**
+2. Click **Repositories** (Private)
+3. Select `my-app-repo`
+4. Click **Delete** (top right)
+5. Type `delete` to confirm → Click **Delete**
+
+✅ ECR repository and all images deleted.
+
+---
+
+## Step 7 — Delete IAM Roles & Inline Policies
+
+Delete both roles created for this project.
+
+### Delete `CodeBuildECRRole`
+
+1. Go to **AWS Console** → Search **IAM**
+2. Click **Roles**
+3. Search for `CodeBuildECRRole`
+4. Click the role → Click **Delete**
+5. Type the role name to confirm → Click **Delete**
+
+### Delete `CodePipelineECSRole` (+ inline policy inside it)
+
+This role has an **inline policy** (`CodePipelineCustomPolicy`) attached directly to it. When you delete the role, the inline policy is automatically deleted with it — no separate step needed.
+
+1. Search for `CodePipelineECSRole`
+2. Click the role
+3. You will see `CodePipelineCustomPolicy` listed under **Inline policies** — this is fine, it will be removed automatically
+4. Click **Delete** (top right)
+5. Type the role name to confirm → Click **Delete**
+
+> ℹ️ Unlike managed policies, inline policies live inside the role itself — deleting the role deletes the policy too.
+
+### Delete `ecsTaskExecutionRole` (only if you created it fresh for this project)
+
+> ⚠️ Skip this if you plan to use ECS again — this role is commonly reused across projects.
+
+1. Search for `ecsTaskExecutionRole`
+2. Click the role → Click **Delete**
+3. Confirm deletion
+
+✅ IAM Roles and inline policies deleted.
+
+---
+
+## Step 8 — Delete CloudWatch Log Groups
+
+1. Go to **AWS Console** → Search **CloudWatch**
+2. Click **Logs** → **Log groups**
+3. Search for `/ecs/my-app-task`
+4. Select the log group
+5. Click **Actions** → **Delete log group(s)**
+6. Confirm deletion
+
+Also check for and delete:
+
+- `/aws/codebuild/my-app-build`
+
+✅ Log groups deleted.
+
+---
+
+## Step 9 — Delete S3 Artifact Bucket
+
+CodePipeline automatically creates an S3 bucket to store pipeline artifacts.
+
+1. Go to **AWS Console** → Search **S3**
+2. Look for a bucket named like:
+   `codepipeline-us-east-1-XXXXXXXXXXXX`
+3. Click the bucket
+4. Click **Empty** first (you must empty before deleting)
+   - Type `permanently delete` → Click **Empty**
+5. Go back → Select the bucket → Click **Delete**
+6. Type the bucket name to confirm → Click **Delete bucket**
+
+✅ S3 artifact bucket deleted.
+
+---
+
+## Step 10 — Remove GitHub Connection (Optional)
+
+If you connected GitHub to AWS CodePipeline via CodeStar Connections:
+
+1. Go to **AWS Console** → Search **CodePipeline**
+2. In the left sidebar → Click **Settings** → **Connections**
+3. Find the connection to your GitHub account
+4. Select it → Click **Delete**
+5. Confirm deletion
+
+✅ GitHub connection removed.
+
+---
+
+## Quick Verification — Confirm Everything is Gone
+
+After cleanup, verify nothing is still running (which could incur charges):
+
+### ECS
+
+```
+ECS → Clusters → Should be empty
+ECS → Task Definitions → Should show no ACTIVE definitions
+```
+
+### ECR
+
+```
+ECR → Repositories → my-app-repo should not exist
+```
+
+### CodePipeline
+
+```
+CodePipeline → Pipelines → Should be empty
+```
+
+### CodeBuild
+
+```
+CodeBuild → Build projects → Should be empty
+```
+
+### S3
+
+```
+S3 → Look for any codepipeline-* buckets → Should be gone
+```
+
+### IAM
+
+```
+IAM → Roles → Search CodeBuildECRRole, CodePipelineECSRole → Should be gone
+```
+
+### CloudWatch
+
+```
+CloudWatch → Log Groups → /ecs/my-app-task → Should be gone
+```
+
+---
+
+## 💰 Resources That Cost Money If Left Running
+
+| Resource                    | Cost Risk                     | Priority               |
+| --------------------------- | ----------------------------- | ---------------------- |
+| ECS Service (running tasks) | 🔴 High — billed per second   | Delete FIRST           |
+| ECR Repository              | 🟡 Low — $0.10/GB/month       | Delete                 |
+| S3 Artifact Bucket          | 🟡 Low — minimal storage      | Delete                 |
+| CloudWatch Logs             | 🟢 Very Low                   | Delete                 |
+| IAM Roles                   | 🟢 Free                       | Delete for cleanliness |
+| CodePipeline                | 🟢 Free tier: 1 pipeline free | Delete                 |
+| CodeBuild                   | 🟢 Free tier: 100 min/month   | Delete                 |
+
+> ✅ **Most important:** Delete the **ECS Service** first — that's where active compute charges come from.
+
+---
+
+## If You Want to Rebuild Later
+
+Save these files locally before cleanup — you'll need them to rebuild:
+
+```
+✅ app.js
+✅ package.json
+✅ Dockerfile
+✅ buildspec.yml
+✅ .gitignore
+```
+
+Your GitHub repository stays intact — AWS cleanup does not affect GitHub.
+
+---
