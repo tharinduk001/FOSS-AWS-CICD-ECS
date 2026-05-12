@@ -659,7 +659,7 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 # AWS Resource Cleanup
 
 > ⚠️ **Warning:** This is irreversible. Once deleted, resources cannot be recovered.
-> Always delete in the correct order — some resources depend on others.
+> Always delete in the correct order - some resources depend on others.
 
 ---
 
@@ -680,7 +680,7 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 
 ---
 
-## Step 1 — Delete CodePipeline
+## Step 1 - Delete CodePipeline
 
 **Why first:** Stops any future pipeline runs from triggering new deployments.
 
@@ -694,7 +694,7 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 
 ---
 
-## Step 2 — Delete CodeBuild Project
+## Step 2 - Delete CodeBuild Project
 
 1. Go to **AWS Console** → Search **CodeBuild**
 2. Click **Build projects**
@@ -706,7 +706,7 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 
 ---
 
-## Step 3 — Stop & Delete ECS Service
+## Step 3 - Stop & Delete ECS Service
 
 **Why before cluster:** You must scale down and delete the service before deleting the cluster.
 
@@ -727,7 +727,7 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 
 ---
 
-## Step 4 — Delete ECS Cluster
+## Step 4 - Delete ECS Cluster
 
 1. Go to **ECS** → **Clusters**
 2. Select `my-app-cluster`
@@ -740,9 +740,9 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 
 ---
 
-## Step 5 — Deregister ECS Task Definitions
+## Step 5 - Deregister ECS Task Definitions
 
-> ℹ️ AWS does not allow permanent deletion of task definitions easily — you must **deregister** them first, then delete.
+> ℹ️ AWS does not allow permanent deletion of task definitions easily - you must **deregister** them first, then delete.
 
 1. Go to **ECS** → **Task Definitions**
 2. Click `my-app-task`
@@ -760,7 +760,7 @@ After deregistering, select the task definitions again:
 
 ---
 
-## Step 6 — Delete ECR Repository
+## Step 6 - Delete ECR Repository
 
 > ⚠️ This deletes ALL Docker images stored in the repo.
 
@@ -774,7 +774,7 @@ After deregistering, select the task definitions again:
 
 ---
 
-## Step 7 — Delete IAM Roles & Inline Policies
+## Step 7 - Delete IAM Roles & Inline Policies
 
 Delete both roles created for this project.
 
@@ -788,19 +788,19 @@ Delete both roles created for this project.
 
 ### Delete `CodePipelineECSRole` (+ inline policy inside it)
 
-This role has an **inline policy** (`CodePipelineCustomPolicy`) attached directly to it. When you delete the role, the inline policy is automatically deleted with it — no separate step needed.
+This role has an **inline policy** (`CodePipelineCustomPolicy`) attached directly to it. When you delete the role, the inline policy is automatically deleted with it - no separate step needed.
 
 1. Search for `CodePipelineECSRole`
 2. Click the role
-3. You will see `CodePipelineCustomPolicy` listed under **Inline policies** — this is fine, it will be removed automatically
+3. You will see `CodePipelineCustomPolicy` listed under **Inline policies** - this is fine, it will be removed automatically
 4. Click **Delete** (top right)
 5. Type the role name to confirm → Click **Delete**
 
-> ℹ️ Unlike managed policies, inline policies live inside the role itself — deleting the role deletes the policy too.
+> ℹ️ Unlike managed policies, inline policies live inside the role itself - deleting the role deletes the policy too.
 
 ### Delete `ecsTaskExecutionRole` (only if you created it fresh for this project)
 
-> ⚠️ Skip this if you plan to use ECS again — this role is commonly reused across projects.
+> ⚠️ Skip this if you plan to use ECS again - this role is commonly reused across projects.
 
 1. Search for `ecsTaskExecutionRole`
 2. Click the role → Click **Delete**
@@ -810,7 +810,7 @@ This role has an **inline policy** (`CodePipelineCustomPolicy`) attached directl
 
 ---
 
-## Step 8 — Delete CloudWatch Log Groups
+## Step 8 - Delete CloudWatch Log Groups
 
 1. Go to **AWS Console** → Search **CloudWatch**
 2. Click **Logs** → **Log groups**
@@ -827,7 +827,7 @@ Also check for and delete:
 
 ---
 
-## Step 9 — Delete S3 Artifact Bucket
+## Step 9 - Delete S3 Artifact Bucket
 
 CodePipeline automatically creates an S3 bucket to store pipeline artifacts.
 
@@ -844,7 +844,7 @@ CodePipeline automatically creates an S3 bucket to store pipeline artifacts.
 
 ---
 
-## Step 10 — Remove GitHub Connection (Optional)
+## Step 10 - Remove GitHub Connection (Optional)
 
 If you connected GitHub to AWS CodePipeline via CodeStar Connections:
 
@@ -858,7 +858,7 @@ If you connected GitHub to AWS CodePipeline via CodeStar Connections:
 
 ---
 
-## Quick Verification — Confirm Everything is Gone
+## Quick Verification - Confirm Everything is Gone
 
 After cleanup, verify nothing is still running (which could incur charges):
 
@@ -911,21 +911,21 @@ CloudWatch → Log Groups → /ecs/my-app-task → Should be gone
 
 | Resource                    | Cost Risk                     | Priority               |
 | --------------------------- | ----------------------------- | ---------------------- |
-| ECS Service (running tasks) | 🔴 High — billed per second   | Delete FIRST           |
-| ECR Repository              | 🟡 Low — $0.10/GB/month       | Delete                 |
-| S3 Artifact Bucket          | 🟡 Low — minimal storage      | Delete                 |
+| ECS Service (running tasks) | 🔴 High - billed per second   | Delete FIRST           |
+| ECR Repository              | 🟡 Low - $0.10/GB/month       | Delete                 |
+| S3 Artifact Bucket          | 🟡 Low - minimal storage      | Delete                 |
 | CloudWatch Logs             | 🟢 Very Low                   | Delete                 |
 | IAM Roles                   | 🟢 Free                       | Delete for cleanliness |
 | CodePipeline                | 🟢 Free tier: 1 pipeline free | Delete                 |
 | CodeBuild                   | 🟢 Free tier: 100 min/month   | Delete                 |
 
-> ✅ **Most important:** Delete the **ECS Service** first — that's where active compute charges come from.
+> ✅ **Most important:** Delete the **ECS Service** first - that's where active compute charges come from.
 
 ---
 
 ## If You Want to Rebuild Later
 
-Save these files locally before cleanup — you'll need them to rebuild:
+Save these files locally before cleanup - you'll need them to rebuild:
 
 ```
 ✅ app.js
@@ -935,6 +935,6 @@ Save these files locally before cleanup — you'll need them to rebuild:
 ✅ .gitignore
 ```
 
-Your GitHub repository stays intact — AWS cleanup does not affect GitHub.
+Your GitHub repository stays intact - AWS cleanup does not affect GitHub.
 
 ---
