@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
 </head>
 <body>
   <div class="card">
-    <h1>🚀 Hello from ECS 20/05!</h1>
+    <h1>🚀 Hello from ECS 23/05!</h1>
     <p>Your pipeline is working perfectly.</p>
   </div>
 </body>
