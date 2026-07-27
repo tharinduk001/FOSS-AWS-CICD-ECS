@@ -81,7 +81,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
-  res.send("<h1>🚀 Hello from ECS! Pipeline is working!</h1>");
+  res.send("<h1>Hello from ECS! Pipeline is working!</h1>");
 });
 
 app.listen(PORT, () => {
@@ -107,7 +107,7 @@ app.listen(PORT, () => {
 
 ### Step 1.4 - Create `Dockerfile`
 
-> ⚠️ **Important:** Use the **ECR Public mirror** instead of Docker Hub to avoid rate limit errors in CodeBuild.
+> **Important:** Use the **ECR Public mirror** instead of Docker Hub to avoid rate limit errors in CodeBuild.
 
 ```dockerfile
 # Use ECR Public mirror instead of Docker Hub (avoids rate limit errors in CodeBuild)
@@ -137,8 +137,6 @@ CMD ["npm", "start"]
 Docker Hub has a rate limit for unauthenticated pulls. AWS CodeBuild uses shared IPs that frequently hit this limit, causing a `429 Too Many Requests` error. Using the AWS ECR Public mirror avoids this entirely.
 
 ### Step 1.5 - Create `buildspec.yml`
-
-This file tells CodeBuild exactly what commands to run.
 
 ```yaml
 version: 0.2
@@ -170,7 +168,7 @@ artifacts:
     - imagedefinitions.json
 ```
 
-> ⭐ The `imagedefinitions.json` file is critical - it tells ECS which container to update during deployment.
+> The `imagedefinitions.json` file is critical - it tells ECS which container to update during deployment.
 
 ### Step 1.6 - Create `.gitignore`
 
@@ -219,7 +217,7 @@ git branch -M main
 git push -u origin main
 ```
 
-✅ Your code is now on GitHub.
+Your code is now on GitHub.
 
 ---
 
@@ -244,10 +242,12 @@ git push -u origin main
 2. Click **Clusters** → **Create Cluster**
 3. Configure:
    - Cluster name: `my-app-cluster`
-   - Infrastructure: ✅ **AWS Fargate** (serverless - no EC2 instances to manage)
+
+- Infrastructure: **AWS Fargate** (serverless - no EC2 instances to manage)
+
 4. Click **Create**
 
-> ⏳ Wait about 1 minute for the cluster to be ready.
+> Wait about 1 minute for the cluster to be ready.
 
 ---
 
@@ -264,8 +264,7 @@ A Task Definition tells ECS **what container to run** and how to run it.
 3. Under **Container details**:
    - Name: `my-app-container`
 
-     > ⭐ This name **must exactly match** the container name in `buildspec.yml`
-
+   > This name **must exactly match** the container name in `buildspec.yml`
    - Image URI: `YOUR_ACCOUNT_ID.dkr.ecr.YOUR_REGION.amazonaws.com/my-app-repo:latest`
    - Container port: `3000`
    - Protocol: `TCP`
@@ -324,7 +323,7 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 
 ### Role 2: CodePipeline Role
 
-> ⚠️ **Note:** CodePipeline does not appear in the AWS Service dropdown. Use the **Custom trust policy** method instead.
+> **Note:** CodePipeline does not appear in the AWS Service dropdown. Use the **Custom trust policy** method instead.
 
 **Create the role:**
 
@@ -354,7 +353,7 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 
 **Now add the Inline Policy (`CodePipelineCustomPolicy`):**
 
-> ℹ️ We use an inline policy instead of managed policies because AWS has deprecated `AWSCodePipelineFullAccess` and the newer managed policies may not be available in all accounts/regions. An inline policy is simpler and always works.
+> We use an inline policy instead of managed policies because AWS has deprecated `AWSCodePipelineFullAccess` and the newer managed policies may not be available in all accounts/regions. An inline policy is simpler and always works.
 
 1. Open the newly created `CodePipelineECSRole`
 2. Click **Add permissions** → **Create inline policy**
@@ -408,7 +407,7 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 - Operating system: **Ubuntu**
 - Runtime: **Standard**
 - Image: `aws/codebuild/standard:7.0`
-- ✅ **Enable privileged mode** ← Required for Docker builds!
+  - **Enable privileged mode** ← Required for Docker builds!
 - Service role: `CodeBuildECRRole`
 
 **Environment Variables - Add all three:**
@@ -434,7 +433,7 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 2. On the "Choose creation option" screen:
    - Category: **Build custom pipeline**
 
-     > ⭐ Do NOT use the templates (Push to ECR, Deploy to ECS Fargate, etc.) - they only cover partial workflows. "Build custom pipeline" lets us add all 3 stages manually.
+   > Do NOT use the templates (Push to ECR, Deploy to ECS Fargate, etc.) - they only cover partial workflows. "Build custom pipeline" lets us add all 3 stages manually.
 
 3. Configure:
    - Pipeline name: `my-app-pipeline`
@@ -469,7 +468,7 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 
 5. Review everything → Click **Create pipeline**
 
-> ⏳ The pipeline will run automatically for the first time after creation.
+> The pipeline will run automatically for the first time after creation.
 
 ---
 
@@ -480,7 +479,7 @@ This is the most critical phase - it gives AWS services permission to talk to ea
 ```bash
 # Make a visible change to your app
 # Edit app.js and change the message:
-# '<h1>🚀 Hello from ECS! Version 2 is live!</h1>'
+# '<h1>Hello from ECS! Version 2 is live!</h1>'
 
 git add .
 git commit -m "Test pipeline - version 2"
@@ -493,9 +492,9 @@ git push origin main
 2. Watch all 3 stages turn green:
 
 ```
-✅ Source   → GitHub push detected
-✅ Build    → Docker image built and pushed to ECR
-✅ Deploy   → ECS updated with new image
+Source   → GitHub push detected
+Build    → Docker image built and pushed to ECR
+Deploy   → ECS updated with new image
 ```
 
 ### Access your running app:
@@ -503,23 +502,23 @@ git push origin main
 1. Go to **ECS** → `my-app-cluster` → `my-app-service`
 2. Click the **Tasks** tab → Click the running task
 3. Find the **Public IP** address
-4. Open `http://PUBLIC_IP:3000` in your browser 🎉
+4. Open `http://PUBLIC_IP:3000` in your browser
 
 ---
 
 ## Troubleshooting
 
-### ❌ Error: `429 Too Many Requests` from Docker Hub
+### Error: `429 Too Many Requests` from Docker Hub
 
 **Cause:** CodeBuild hit Docker Hub's anonymous pull rate limit.
 
 **Fix:** Change your `Dockerfile` FROM line:
 
 ```dockerfile
-# ❌ Old (causes rate limit errors)
+# Old (causes rate limit errors)
 FROM node:18-alpine
 
-# ✅ New (use ECR Public mirror - no rate limits)
+# New (use ECR Public mirror - no rate limits)
 FROM public.ecr.aws/docker/library/node:18-alpine
 ```
 
@@ -527,7 +526,7 @@ Commit and push - the pipeline will re-trigger automatically.
 
 ---
 
-### ❌ CodePipeline not in IAM dropdown
+### CodePipeline not in IAM dropdown
 
 **Cause:** AWS removed CodePipeline from the service dropdown in newer UI.
 
@@ -550,7 +549,7 @@ Then attach the `CodePipelineCustomPolicy` inline policy as described in Phase 7
 
 ---
 
-### ❌ Managed pipeline policies not found in IAM
+### Managed pipeline policies not found in IAM
 
 **Cause:** AWS has deprecated `AWSCodePipelineFullAccess` and newer managed policies like `AWSCodePipeline_FullAccess` may not appear in all accounts or regions.
 
@@ -558,7 +557,7 @@ Then attach the `CodePipelineCustomPolicy` inline policy as described in Phase 7
 
 ---
 
-### ❌ ECS task keeps stopping / failing to start
+### ECS task keeps stopping / failing to start
 
 **Cause:** Usually a port mismatch or missing IAM permissions.
 
@@ -571,7 +570,7 @@ Then attach the `CodePipelineCustomPolicy` inline policy as described in Phase 7
 
 ---
 
-### ❌ `imagedefinitions.json` not found during deploy
+### `imagedefinitions.json` not found during deploy
 
 **Cause:** The `buildspec.yml` `post_build` phase failed before creating the file, or the artifacts section is missing.
 
@@ -652,13 +651,13 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 | CodePipeline IAM Role      | `CodePipelineECSRole`      |
 | CodePipeline Inline Policy | `CodePipelineCustomPolicy` |
 
-> ⭐ **Golden Rule:** The container name `my-app-container` must be identical in three places: Task Definition, `buildspec.yml`, and `imagedefinitions.json` output.
+> **Golden Rule:** The container name `my-app-container` must be identical in three places: Task Definition, `buildspec.yml`, and `imagedefinitions.json` output.
 
 ---
 
 # AWS Resource Cleanup
 
-> ⚠️ **Warning:** This is irreversible. Once deleted, resources cannot be recovered.
+> **Warning:** This is irreversible. Once deleted, resources cannot be recovered.
 > Always delete in the correct order - some resources depend on others.
 
 ---
@@ -690,7 +689,7 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 4. Click **Delete pipeline** (top right)
 5. Type the pipeline name to confirm → Click **Delete**
 
-✅ Pipeline deleted.
+Pipeline deleted.
 
 ---
 
@@ -702,7 +701,7 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 4. Click **Action** → **Delete**
 5. Confirm deletion
 
-✅ CodeBuild project deleted.
+CodeBuild project deleted.
 
 ---
 
@@ -720,10 +719,10 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 8. Go back to **Services** tab
 9. Select `my-app-service` again
 10. Click **Delete service**
-11. Check ✅ **"Force delete service"**
+11. Check **"Force delete service"**
 12. Type `delete` to confirm → Click **Delete**
 
-✅ ECS Service deleted.
+ECS Service deleted.
 
 ---
 
@@ -734,15 +733,15 @@ Also verify the container name (`my-app-container`) matches exactly in both `bui
 3. Click **Delete cluster** (top right)
 4. Type `delete me` to confirm → Click **Delete**
 
-> ⏳ Takes 1-2 minutes to fully delete.
+> Takes 1-2 minutes to fully delete.
 
-✅ ECS Cluster deleted.
+ECS Cluster deleted.
 
 ---
 
 ## Step 5 - Deregister ECS Task Definitions
 
-> ℹ️ AWS does not allow permanent deletion of task definitions easily - you must **deregister** them first, then delete.
+> AWS does not allow permanent deletion of task definitions easily - you must **deregister** them first, then delete.
 
 1. Go to **ECS** → **Task Definitions**
 2. Click `my-app-task`
@@ -756,13 +755,13 @@ After deregistering, select the task definitions again:
 - Click **Actions** → **Delete**
 - Type `delete` to confirm
 
-✅ Task definitions removed.
+Task definitions removed.
 
 ---
 
 ## Step 6 - Delete ECR Repository
 
-> ⚠️ This deletes ALL Docker images stored in the repo.
+> This deletes ALL Docker images stored in the repo.
 
 1. Go to **AWS Console** → Search **ECR**
 2. Click **Repositories** (Private)
@@ -770,7 +769,7 @@ After deregistering, select the task definitions again:
 4. Click **Delete** (top right)
 5. Type `delete` to confirm → Click **Delete**
 
-✅ ECR repository and all images deleted.
+ECR repository and all images deleted.
 
 ---
 
@@ -796,17 +795,17 @@ This role has an **inline policy** (`CodePipelineCustomPolicy`) attached directl
 4. Click **Delete** (top right)
 5. Type the role name to confirm → Click **Delete**
 
-> ℹ️ Unlike managed policies, inline policies live inside the role itself - deleting the role deletes the policy too.
+> Unlike managed policies, inline policies live inside the role itself - deleting the role deletes the policy too.
 
 ### Delete `ecsTaskExecutionRole` (only if you created it fresh for this project)
 
-> ⚠️ Skip this if you plan to use ECS again - this role is commonly reused across projects.
+> Skip this if you plan to use ECS again - this role is commonly reused across projects.
 
 1. Search for `ecsTaskExecutionRole`
 2. Click the role → Click **Delete**
 3. Confirm deletion
 
-✅ IAM Roles and inline policies deleted.
+IAM Roles and inline policies deleted.
 
 ---
 
@@ -823,7 +822,7 @@ Also check for and delete:
 
 - `/aws/codebuild/my-app-build`
 
-✅ Log groups deleted.
+Log groups deleted.
 
 ---
 
@@ -840,7 +839,7 @@ CodePipeline automatically creates an S3 bucket to store pipeline artifacts.
 5. Go back → Select the bucket → Click **Delete**
 6. Type the bucket name to confirm → Click **Delete bucket**
 
-✅ S3 artifact bucket deleted.
+S3 artifact bucket deleted.
 
 ---
 
@@ -854,7 +853,7 @@ If you connected GitHub to AWS CodePipeline via CodeStar Connections:
 4. Select it → Click **Delete**
 5. Confirm deletion
 
-✅ GitHub connection removed.
+GitHub connection removed.
 
 ---
 

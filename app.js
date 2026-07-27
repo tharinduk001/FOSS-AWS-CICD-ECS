@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send(`
 <!DOCTYPE html>
 <html lang="en">
@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
 </head>
 <body>
   <div class="card">
-    <h1>🚀 Hello from ECS</h1>
+    <h1>Hello from ECS</h1>
     <h2>Congratulations FOSS</h2>
     <p>Your pipeline is working perfectly.</p>
   </div>
